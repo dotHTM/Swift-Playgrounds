@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>enum PGConst: Double{
+    case epsilon = 0.1
+}
+
+struct PGCircleButton{
+    var backer = Circle(radius: 1)
+    var radius: Double {
+        get{return backer.radius}
+        set{backer.radius = newValue}
+    }
+    var title = Text(string: "Button")
+    var toucher = Circle(radius: 1 + PGConst.epsilon.rawValue )
+    
+    var activeState = true
+    
+    var activeColor = #colorLiteral(red: 0.239215686917305, green: 0.674509823322296, blue: 0.968627452850342, alpha: 1.0)
+    var downColor = #colorLiteral(red: 0.925490200519562, green: 0.235294118523598, blue: 0.10196078568697, alpha: 1.0)
+    var inactiveColor = #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    
+    init(){
+        backer.radius =  1
+        backer.color = activeColor
+        toucher.radius = 1 + PGConst.epsilon.rawValue
+        toucher.color = Color(white: 1, alpha: 0.15)
+        title.color = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+        onEventTouchUp{}
+        onEventTouchDown{}
+    }
+    init(radius newRadius: Double, text newText: String, center newCenter: Point){
+        self.init()
+        resize(radius: newRadius)
+        changeText(text: newText)
+        moveCenter(center: newCenter)
+    }
+    
+    func moveCenter(center newCenter: Point){
+        backer.center = newCenter
+        title.center = newCenter
+        toucher.center = newCenter
+    }
+    
+    func resize(radius newRadius: Double){
+        backer.radius = newRadius
+        toucher.radius = newRadius
+    }
+    
+    func changeText(text newText: String){
+        title.string = newText
+    }
+    
+    func onEventTouchDown(code: @escaping ()-&gt;() ) {
+        toucher.onTouchDown {
+            self.checkActive()
+            self.activeState
+            if self.activeState {
+                self.backer.color = self.downColor
+                code()
+            } 
+        }
+    }
+    
+    func onEventTouchUp(someCode: ()-&gt;() ) {
+        toucher.onTouchUp {
+            self.checkActive()
+            if self.activeState {
+                self.backer.color = self.activeColor
+                someCode()
+                self.activeState
+            }
+        }
+    }
+    
+    mutating func changeColor(color newColor: Color){
+        activeColor = newColor
+        checkActive()
+    }
+    
+    func checkActive(){
+        if activeState{
+            backer.color = activeColor
+        } else {
+            backer.color = inactiveColor
+        }
+    }
+    
+    mutating func deactivate() {
+        self.activeState = false
+        checkActive()
+    }
+    mutating func activate() {
+        self.activeState = true
+        checkActive()
+    }
+    mutating func toggle() {
+        self.activeState = !activeState
+        checkActive()
+    }
+}
+
+var myButton = PGCircleButton(radius: 4, text: "hello", center: Point(x: 5, y: 4))
+
+
+
+
+myButton.changeColor(color: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0))
+
+myButton.onEventTouchDown {
+//      myButton.resize(radius: myButton.radius * 1.111111)
+//      
+}
+
+myButton.onEventTouchUp {
+    myButton.deactivate()
+    myButton.activeState
+}
+
+
+
+
+
+</string>
+			<key>ModifiedRange</key>
+			<string>{283, 3173}</string>
+			<key>OriginalContent</key>
+			<string>let circle = Circle()
+circle.draggable = true
+</string>
+			<key>OriginalRange</key>
+			<string>{283, 46}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Shapes.playgroundchapter/Pages/Canvas.playgroundpage/Contents.swift</string>
+</dict>
+</plist>
