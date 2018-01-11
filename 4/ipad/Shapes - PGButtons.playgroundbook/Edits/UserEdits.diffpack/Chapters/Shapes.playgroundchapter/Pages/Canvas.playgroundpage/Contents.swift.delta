@@ -6,55 +6,153 @@
 	<array>
 		<dict>
 			<key>ModifiedContent</key>
-			<string>enum PGConst: Double{
-    case epsilon = 0.1
+			<string>import Foundation
+
+let Epsilon = 0.1
+let Pi = 3.14159
+let Tau = Pi * 2
+
+extension Shape {
+    func colorChange(_ newColor: Color){
+        animate(duration: 0.5, delay: 0){ self.color = newColor }
+    }
 }
 
-let PGConstants = [
-    "qepsilon" : 4.5
-]
+extension Text {
+    func colorChange(_ newColor: Color){
+        animate(duration: 0.5, delay: 0){ self.color = newColor }
+    }
+}
+
+func + (lhs: Point, rhs: Point)-&gt;Point{
+    return Point(
+        x: lhs.x + rhs.x,
+        y: lhs.y + rhs.y
+    )
+}
 
 struct PGBTheme {
     // top layer takes touch events
     let toucherColor = Color(white: 1.0, alpha: 0.1)
     // text layer
-    let textColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+    let textColor : Color
     // button states
-    let activeColor = #colorLiteral(red: 0.239215686917305, green: 0.674509823322296, blue: 0.968627452850342, alpha: 1.0)
-    let downColor = #colorLiteral(red: 0.925490200519562, green: 0.235294118523598, blue: 0.10196078568697, alpha: 1.0)
-    let inactiveColor = #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    let activeColor : Color
+    let downColor : Color
+    let inactiveColor : Color
+
+    static let defaultButton = PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.474509805440903, green: 0.839215695858002, blue: 0.976470589637756, alpha: 1.0), downColor: #colorLiteral(red: 0.239215686917305, green: 0.674509823322296, blue: 0.968627452850342, alpha: 1.0), inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0))
+    static let defaultIndicator = PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0), downColor: Color(white: 1, alpha: 0.1), inactiveColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0))
 }
 
-class PGButton{
-    private let epsilon = PGConst.epsilon.rawValue
+class PGIndicator{
+    private var light = Circle(radius: 4)
     
+    var radius : Double {
+        get{ return light.radius }
+        set{ light.radius = newValue 
+            removeRays()
+            if value { setUpRays() }
+        }
+    }
+    
+    var center : Point {
+        get{ return light.center }
+        set{ light.center = newValue 
+            removeRays()
+            if value { setUpRays() }
+        }
+    }
+    
+    var theme = PGBTheme.defaultIndicator
+    
+    var rays : [ Shape ] = []
+    
+    func removeRays(){
+        for i in rays
+        { i.remove() }
+    }
+    func setUpRays() {
+        removeRays()
+        let maxRays = 8
+        let distance = light.radius * 1.25
+        for i in 1 ... maxRays {
+            var someRay = Rectangle(
+                width: 1,
+                height: light.radius * 0.5,
+                cornerRadius: 0.5)
+            someRay.rotation = (Tau * Double(i) ) / Double(maxRays)
+            someRay.color = theme.activeColor
+            
+            someRay.center = center + Point(
+                x: distance *  sin(someRay.rotation),
+                y: distance *  cos(someRay.rotation)
+            ) 
+            rays.append(someRay)
+        }
+    }
+    
+    func updateValue(){
+        if value 
+        { 
+            light.colorChange( theme.activeColor ) 
+            setUpRays()
+        } else {
+            light.colorChange( theme.inactiveColor )
+            removeRays()
+        }
+    }
+    
+    var value = false
+    { didSet{ updateValue()
+ } }
+    
+    init() {
+        updateValue()
+    }
+    
+    convenience init(
+        initialValue: Bool,
+        radius newRadius: Double,
+        center newCenter: Point,
+        theme newTheme: PGBTheme
+         ){
+        self.init()
+        value = initialValue
+        radius = newRadius
+        center = newCenter
+        updateValue()
+    }
+
+}
+
+
+class PGButton{
     private var backer = Circle(radius: 1)
     private var title = Text(string: "Button")
     private var toucher = Circle(radius: 1)
     
-    var activeState = true
+    var isEnabled = true
+     
+    private func updateTheme(){            toucher.color = theme.toucherColor
+        backer.colorChange(theme.activeColor)
+        title.colorChange(theme.textColor)
+    }
     
-    private var internalTheme = PGBTheme()
-    var theme : PGBTheme{
-        get{ return internalTheme }
-        set{
-            internalTheme = newValue
-            toucher.color = theme.toucherColor
-            colorChange(theme.activeColor)
-            title.color = theme.textColor
-        }
+    var theme = PGBTheme.defaultButton {
+        didSet{ updateTheme() }
     }
     
     var radius : Double {
         get{ return backer.radius }
         set{ 
             backer.radius = newValue
-            toucher.radius = newValue + epsilon
+            toucher.radius = newValue + Epsilon
         }
     }
     
     var center : Point{
-        get{return backer.center}
+        get{ return backer.center }
         set{
             backer.center = newValue
             title.center = newValue
@@ -63,109 +161,140 @@ class PGButton{
     }
     
     var string : String {
-        get{return title.string}
+        get{ return title.string }
         set{ title.string = newValue }
     }
     
     init(){
         onTouchDown {}
         onTouchUp {}
+        updateTheme()
     }
     
-    convenience init(radius newRadius: Double, center newCenter: Point, string newString: String, theme newTheme: PGBTheme){
+    convenience init(
+        radius newRadius: Double,
+        center newCenter: Point,
+        string newString: String,
+        theme newTheme: PGBTheme
+        ) 
+    {
         self.init()
         center = newCenter
         theme = newTheme
         radius = newRadius
         string = newString
+        updateTheme()
     }
     
     func checkActive(){
-        if activeState{
-            colorChange(theme.activeColor)
+        if isEnabled{
+            backer.colorChange( theme.activeColor )
         } else {
-            colorChange(theme.inactiveColor)
+            backer.colorChange( theme.inactiveColor )
         }
     }
+    
+    var downFunc = {}
+    var upFunc = {}
+    var isButtonDown = false 
     
     func onTouchDown(_ code: @escaping ()-&gt;()){
-        toucher.onTouchDown { 
-            if self.activeState{
-                self.colorChange(self.theme.downColor)
+        downFunc = { 
+            if self.isEnabled{
+                self.backer.colorChange( self.theme.downColor )
+                self.isButtonDown = true
                 code()
             }
         }
+        toucher.onTouchDown (downFunc)
     }
     
-    func onTouchUp(_ code: @escaping ()-&gt;()){
-        toucher.onTouchUp { 
-            if self.activeState{
-                self.colorChange(self.theme.activeColor)
+    func onTouchUp( _ code: @escaping ()-&gt;() )
+    {
+        upFunc = { 
+            if self.isEnabled{
+                self.backer.colorChange( self.theme.activeColor )
+                self.isButtonDown = false
                 code()
             }
         }
+        toucher.onTouchUp (upFunc)
     }
     
-    func colorChange(_ newColor: Color){
-        animate(duration: 0.5, delay: 0){
-            self.backer.color = newColor
-        }
-        
+    func enable() {
+        self.isEnabled = true
+        checkActive()
     }
     
-    func activate() {
-        self.activeState = true
+    func release(){
+        if isEnabled &amp;&amp; isButtonDown { upFunc() }
+    }
+    
+    func disableRelease() {
+        release()
+        disableLock()
+    }
+    
+    func disableLock() {
+        isEnabled = false
         checkActive()
     }
-    func deactivate() {
-        self.activeState = false
-        checkActive()
+    
+    func toggleRelease(){
+        release()
+        toggleLock()
     }
-    func toggle() {
-        self.activeState = !activeState
+    
+    func toggleLock() {
+        isEnabled = !isEnabled
         checkActive()
     }
     
     func resize(radius newRadius: Double){
         backer.scale = newRadius
-        toucher.scale = newRadius + epsilon
+        toucher.scale = newRadius + Epsilon
     }
 }
 
 // ---- ---- ---- ---- ---- ---- ----
 
-var buttonA = PGButton(radius: 5, center: Point(x: -10, y: 3), string: "A", theme: PGBTheme())
+var buttonA = PGButton(
+    radius: 5,
+    center: Point(x: -10, y: 3),
+    string: "A", 
+    theme: PGBTheme.defaultButton
+)
 
-var buttonB = PGButton(radius: 5, center: Point(x: 10, y: 3), string: "B", theme: PGBTheme())
+var buttonB = PGButton(
+    radius: 5,
+    center: Point(x: 10, y: 3),
+    string: "B",
+    theme: PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.909803926944733, green: 0.47843137383461, blue: 0.643137276172638, alpha: 1.0), downColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0), inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0))
+)
 
-var indicatorLight = Circle(radius: 4)
-indicatorLight.center = Point(x: 0, y: 10)
+var indicatorB = PGIndicator(
+    initialValue: false, 
+    radius: 4, 
+    center: Point(x: 0, y: 20), 
+    theme: PGBTheme.defaultIndicator
+)
 
-var indicatorValue = false
+buttonA.onTouchUp
+    { buttonB.toggleRelease() }
+buttonB.onTouchDown
+    { indicatorB.value = true }
+buttonB.onTouchUp 
+    { indicatorB.value = false }
 
-buttonA.onTouchUp {
-    buttonB.toggle()
-}
-
-buttonB.onTouchDown {
-    indicatorValue = !indicatorValue
-    
-    if indicatorValue {
-        indicatorLight.color = #colorLiteral(red: 0.466666668653488, green: 0.764705896377563, blue: 0.266666680574417, alpha: 1.0)
-    } else {
-        indicatorLight.color = #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0)
-    }
-}
 </string>
 			<key>ModifiedRange</key>
-			<string>{283, 3986}</string>
+			<string>{283, 7283}</string>
 			<key>OriginalContent</key>
 			<string>let circle = Circle()
 circle.draggable = true
-
 </string>
 			<key>OriginalRange</key>
-			<string>{283, 47}</string>
+			<string>{283, 46}</string>
 		</dict>
 	</array>
 	<key>File</key>
