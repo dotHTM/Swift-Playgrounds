@@ -9,7 +9,7 @@
 			<string>import Foundation
 
 let Epsilon = 0.1
-let Pi = 3.14159
+let Pi = Double.pi
 let Tau = Pi * 2
 
 extension Shape {
@@ -42,11 +42,18 @@ struct PGBTheme {
     let inactiveColor : Color
 
     static let defaultButton = PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.474509805440903, green: 0.839215695858002, blue: 0.976470589637756, alpha: 1.0), downColor: #colorLiteral(red: 0.239215686917305, green: 0.674509823322296, blue: 0.968627452850342, alpha: 1.0), inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0))
-    static let defaultIndicator = PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0), downColor: Color(white: 1, alpha: 0.1), inactiveColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0))
+    static let defaultIndicator = PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0), downColor: Color(white: 0.5, alpha: 0.1), inactiveColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0))
 }
 
 class PGIndicator{
     private var light = Circle(radius: 4)
+    
+    var maxRays = 6 {
+        didSet{ 
+            if maxRays &gt; 0 { setUpRays() }
+            else { maxRays = 1 }
+        }
+    }
     
     var radius : Double {
         get{ return light.radius }
@@ -67,22 +74,32 @@ class PGIndicator{
     var theme = PGBTheme.defaultIndicator
     
     var rays : [ Shape ] = []
+    func rayChangeColor ( _ newColor : Color) {
+        for i in rays{
+            i.colorChange( newColor )
+        }
+    }
     
     func removeRays(){
         for i in rays
         { i.remove() }
+        rays = []
     }
     func setUpRays() {
         removeRays()
-        let maxRays = 8
-        let distance = light.radius * 1.25
+        let distance = light.radius * 1.5
         for i in 1 ... maxRays {
             var someRay = Rectangle(
                 width: 1,
                 height: light.radius * 0.5,
                 cornerRadius: 0.5)
             someRay.rotation = (Tau * Double(i) ) / Double(maxRays)
-            someRay.color = theme.activeColor
+            
+            if value {
+                someRay.color = theme.activeColor
+            } else {
+                someRay.color = theme.downColor
+            }
             
             someRay.center = center + Point(
                 x: distance *  sin(someRay.rotation),
@@ -96,10 +113,10 @@ class PGIndicator{
         if value 
         { 
             light.colorChange( theme.activeColor ) 
-            setUpRays()
+            rayChangeColor( theme.activeColor )
         } else {
             light.colorChange( theme.inactiveColor )
-            removeRays()
+            rayChangeColor( theme.downColor )
         }
     }
     
@@ -108,7 +125,9 @@ class PGIndicator{
  } }
     
     init() {
+        rayChangeColor( theme.downColor )
         updateValue()
+        setUpRays()
     }
     
     convenience init(
@@ -118,10 +137,12 @@ class PGIndicator{
         theme newTheme: PGBTheme
          ){
         self.init()
+
         value = initialValue
         radius = newRadius
         center = newCenter
         updateValue()
+        setUpRays()
     }
 
 }
@@ -260,17 +281,48 @@ class PGButton{
 
 var buttonA = PGButton(
     radius: 5,
-    center: Point(x: -10, y: 3),
+    center: Point(x: -10, y: 6),
     string: "A", 
     theme: PGBTheme.defaultButton
 )
 
 var buttonB = PGButton(
     radius: 5,
-    center: Point(x: 10, y: 3),
+    center: Point(x: 10, y: 6),
     string: "B",
-    theme: PGBTheme(textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), activeColor: #colorLiteral(red: 0.909803926944733, green: 0.47843137383461, blue: 0.643137276172638, alpha: 1.0), downColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0), inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0))
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.976470589637756, green: 0.850980401039124, blue: 0.549019634723663, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.952941179275513, green: 0.686274528503418, blue: 0.133333340287209, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
 )
+
+var buttonPlus = PGButton(
+    radius: 5,
+    center: Point(x: 10, y: -6),
+    string: "+",
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.721568644046783, green: 0.886274516582489, blue: 0.592156887054443, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
+)
+
+
+var buttonMinus = PGButton(
+    radius: 5,
+    center: Point(x: -10, y: -6),
+    string: "-",
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.909803926944733, green: 0.47843137383461, blue: 0.643137276172638, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
+)
+
 
 var indicatorB = PGIndicator(
     initialValue: false, 
@@ -279,16 +331,19 @@ var indicatorB = PGIndicator(
     theme: PGBTheme.defaultIndicator
 )
 
-buttonA.onTouchUp
-    { buttonB.toggleRelease() }
+buttonA.onTouchUp { 
+    buttonB.toggleRelease() 
+}
 buttonB.onTouchDown
     { indicatorB.value = true }
 buttonB.onTouchUp 
     { indicatorB.value = false }
 
+buttonPlus.onTouchDown { indicatorB.maxRays += 1 }
+buttonMinus.onTouchDown { indicatorB.maxRays -= 1 }
 </string>
 			<key>ModifiedRange</key>
-			<string>{283, 7283}</string>
+			<string>{283, 9086}</string>
 			<key>OriginalContent</key>
 			<string>let circle = Circle()
 circle.draggable = true
