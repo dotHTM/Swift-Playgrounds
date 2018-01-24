@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>
+import Foundation
+
+let Epsilon = 0.1
+let Pi = Double.pi
+let Tau = Pi * 2
+
+extension Point: Hashable{
+    public var hashValue: Int {
+        return x.hashValue ^ y.hashValue &amp;* 16777619
+    }
+    public static func == (lhs: Point, rhs: Point) -&gt; Bool {
+        return lhs.x == rhs.x &amp;&amp; lhs.y == rhs.y
+    }
+}
+
+extension Shape {
+    func colorChange(_ newColor: Color){
+        animate(duration: 0.5, delay: 0){ self.color = newColor }
+    }
+}
+
+extension Text {
+    func colorChange(_ newColor: Color){
+        animate(duration: 0.5, delay: 0){ self.color = newColor }
+    }
+}
+
+
+func + (lhs: Point, rhs: Point)-&gt;Point{
+    return Point(
+        x: lhs.x + rhs.x,
+        y: lhs.y + rhs.y
+    )
+}
+
+func - (lhs: Point, rhs: Point)-&gt;Point{
+    return Point(
+        x: lhs.x - rhs.x,
+        y: lhs.y - rhs.y
+    )
+}
+
+func * (lhs: Point, rhs: Double)-&gt;Point{
+    return Point(
+        x: lhs.x * rhs,
+        y: lhs.y * rhs
+    )
+}
+
+func * (lhs: Double, rhs: Point)-&gt;Point{
+    return rhs * lhs
+}
+
+
+func / (lhs: Point, rhs: Double)-&gt;Point{
+    return Point(
+        x: lhs.x / rhs,
+        y: lhs.y / rhs
+    )
+}
+
+func magnitude (_ lhs: Point)-&gt;Double{
+    return sqrt( pow(lhs.x,2) + pow(lhs.y,2) )
+}
+
+func distance (lhs: Point, rhs: Point)-&gt;Double{
+    return magnitude( lhs - rhs) 
+}
+
+func nearestPointIn (_ array: [Point], from fromPoint: Point)-&gt;Point{
+    var closestPoint = array.first!
+    var closestDist = -1.0
+    
+    for i in array{
+        if closestDist &lt; 0 {
+            closestPoint = i
+            closestDist = distance(lhs: i, rhs: fromPoint)
+        } else {
+            let thisDist = distance(lhs: i, rhs: fromPoint)
+            if thisDist &lt; closestDist{
+                closestDist = thisDist
+                closestPoint = i
+            }
+        }
+    }
+    return closestPoint
+}
+
+
+func angleBetweenInRad(lhs: Point, rhs: Point)-&gt;Double{
+    let vector = lhs - rhs
+    return atan(vector.x/vector.y) 
+}
+
+typealias NodeSet = Set&lt;Node&gt;
+
+class Node: Hashable{
+    var location = Point(x: 0, y: 0){
+        didSet{ moveGraphics() }
+    }
+    var neighbors : NodeSet = []
+    let id : Int
+    
+    public var hashValue: Int {
+        return id
+    }
+    
+    // graphics
+    var body = Circle(radius: 2)
+    var radius : Double{
+        get { return body.radius }
+        set { body.radius = newValue }
+    }
+    var title = Text(string: "")
+    var links : [Rectangle] = []
+    func moveGraphics(){
+        body.center = location
+        title.center = location
+        updateLinks()
+    }
+    var text : String {
+        get{ return title.string }
+        set{ title.string = newValue }
+    }
+    // END grapics
+    
+    // static
+    public static func == (lhs: Node, rhs: Node) -&gt; Bool {
+        return lhs.hashValue == rhs.hashValue 
+    }
+    
+    static var countOf = 0
+    static var listAll : Set&lt;Node&gt; = []
+    
+    init(at: Point){
+        location = at
+        Node.countOf += 1
+        id = Node.countOf
+        Node.listAll.insert(self)
+        moveGraphics()
+    }
+    
+    convenience init(at: Point, string: String){
+        self.init(at: at)
+        text = string
+        title.color = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+    }
+    deinit{
+        Node.countOf -= 1
+    }
+    
+    func remove(){
+        neighbors = []
+            Node.listAll.remove(self)
+    }
+    
+    // linking
+    func link( to: Node){
+        self.neighbors.insert(to)
+        to.neighbors.insert(self)
+        updateLinks()
+    }
+    func unlink( to: Node){
+        self.neighbors.remove(to)
+        to.neighbors.remove(self)
+        updateLinks()
+    }
+    
+    func drawLink(to: Node){
+        let a = self.location
+        let b = to.location
+        let length = distance(lhs: a, rhs: b) - ( (self.radius + to.radius) / 2 )
+        
+        var someLink = Rectangle(width: 1, height: length )
+        someLink.center = (a + b) / 2
+        someLink.rotation = angleBetweenInRad(lhs: a, rhs: b)
+        links.append(someLink)
+    }
+    
+    func updateLinks(){
+        for i in links{
+            i.remove()
+        }
+        links = []
+        for i in neighbors {
+            if self.id &gt; i.id {            drawLink(to: i) } else
+            { i.updateLinks() }
+        }
+    } 
+    // END links
+    
+    func neighborHood( depth:  Int)-&gt;NodeSet {
+        var resultSet : NodeSet = []
+        if depth &lt;= 1{
+            resultSet.union( self.neighbors )
+        } else{
+            for i in self.neighbors{ 
+                resultSet.union( self.neighborHood( depth: depth - 1 )  )
+            }
+        }
+        return resultSet
+    }
+
+}
+
+struct PlayField {
+    var nodeList : NodeSet = []
+    var pointList : [Point] {
+        get {
+            var quickList : [Point] = []
+            for i in nodeList{
+                quickList.append( i.location )
+            }
+            return quickList }
+    }
+    init(){}
+    init(_ newNodeList: NodeSet ){
+        self.nodeList = newNodeList
+    }
+    
+}
+
+class PlayerUnit {
+    let refreshDistance = 5.0
+    
+    var body : Rectangle
+    var dropPlace : Rectangle?
+    var dragDistance = -1.0
+    var previousCenter = Point(x: 0, y: 0)
+    var speed = 2
+    
+    var atNode : Node
+    { didSet{updatePosition()} }
+    
+    func updatePosition(){
+        body.center = atNode.location
+    }
+    
+    var gameField = PlayField()
+    
+    init(scale: Double, atNode: Node){
+        self.atNode = atNode
+        body = Rectangle(width: scale * 0.8, height: scale * 0.8, cornerRadius: scale*0.2)
+        gameField = PlayField( [atNode] )
+        
+        updatePosition()
+        body.color = #colorLiteral(red: 0.925490200519562, green: 0.235294118523598, blue: 0.10196078568697, alpha: 1.0)
+    }
+    
+    func activeOnTouchUp(){
+        let center = self.body.center
+        
+        self.dropPlace?.remove()
+        self.dropPlace = nil
+        self.dragDistance = 0
+        
+        animate(duration: 1, delay: 0){
+            self.body.center = nearestPointIn( self.gameField.pointList, from: center)
+        }
+    }
+    
+    func makeDropPlace(){
+        let center = self.body.center
+        let scale = body.size.height
+        if self.dropPlace == nil {
+            self.dropPlace = Rectangle(width: scale*0.7, height: scale*0.7, cornerRadius: scale*0.1)
+            self.dropPlace?.color = #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0)
+            self.dropPlace?.center = nearestPointIn(self.gameField.pointList, from: center)
+        }
+    }
+    
+    func activateUnit( ){
+        gameField = PlayField(atNode.neighborHood(depth: speed))
+        body.draggable = true
+        body.onTouchDrag (activeOnTouchDrag)
+        body.onTouchUp (activeOnTouchUp)
+    }
+    
+    func deactivateUnit(){
+        gameField = PlayField( NodeSet([atNode]) )
+        body.draggable = false
+        body.onTouchDrag {}
+        body.onTouchUp {}
+    }
+    
+    func activeOnTouchDrag(){
+        let center = self.body.center
+        makeDropPlace()
+        if self.dragDistance &lt; 0 {
+            self.previousCenter = center
+            self.dragDistance = 0.0
+        } else {
+            self.dragDistance = distance(lhs: center, rhs: self.previousCenter)
+        }
+        if self.dragDistance &gt; self.refreshDistance {
+            animate(duration: 0.5, delay: 0){
+                self.dropPlace?.center = nearestPointIn(self.gameField.pointList, from: center)
+            }
+        }
+    }
+    
+    convenience init(scale: Double, atNode: Node, color newColor: Color ){
+        self.init(scale: scale, atNode: atNode)
+        body.color = newColor
+    }
+}
+
+
+//----
+
+let gridSizeX = 3
+let gridSizeY = 4
+let scale = 10.0
+let playerScale = 5.0
+let neighborHoodDist = scale * 1.1
+let offset = Point(x: -scale * Double(gridSizeX - 1), y: -scale * Double(gridSizeY - 1))
+var gameField = PlayField()
+
+// make a game field
+for i in 1...gridSizeX{
+    for j in 1...gridSizeY{
+        let x = (Double(i) * scale) + offset.x
+        let y = (Double(j) * scale) + offset.x
+        
+        // make the node
+        var someNode = Node(at: Point(x: x, y: y), string: "(\(i),\(j))")
+        
+        // decide neighbors
+        for i in gameField.nodeList{
+            if distance(lhs: i.location, rhs: someNode.location) &lt; neighborHoodDist {
+                someNode.link(to: i)
+            }
+        }
+        
+        gameField.nodeList.insert(someNode)
+    }
+}
+
+// mutate the gamefield
+//  if let funnyNode = Array&lt;Node&gt;(gameField.nodeList).first {
+//      funnyNode.location = (funnyNode.location) * 1.5
+//  }
+//  
+//  if let funnyNode = Array&lt;Node&gt;(gameField.nodeList).last {
+//      funnyNode.location = (funnyNode.location * 1.5 )
+//  }
+//  
+
+// set player units
+var playerList : [PlayerUnit] = []
+
+let bluePlayerPos = Array&lt;Node&gt;(gameField.nodeList).first 
+var blueUnit = PlayerUnit(scale: playerScale, atNode: bluePlayerPos!, color: #colorLiteral(red: 0.219607844948769, green: 0.00784313771873713, blue: 0.854901969432831, alpha: 1.0) )
+
+let redPlayerPos = Array&lt;Node&gt;(gameField.nodeList).last 
+var redUnit = PlayerUnit(scale: playerScale, atNode: redPlayerPos!, color: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0) )
+
+playerList.append(blueUnit) 
+playerList.append(redUnit)
+
+blueUnit.speed = 3
+redUnit.speed = 2
+
+blueUnit.activateUnit()
+</string>
+			<key>ModifiedRange</key>
+			<string>{81, 9328}</string>
+			<key>OriginalContent</key>
+			<string>// create a circle and make it draggable.
+let circle = Circle(radius: 7.0)
+circle.color = Color.purple
+circle.draggable = true
+
+// when the circle is touched, make it darker and give it a shadow.
+circle.onTouchDown {
+    circle.color = circle.color.darker()
+    circle.dropShadow = Shadow()
+}
+
+// when the touch ends on the circle, change its color to a random color.
+circle.onTouchUp {
+    circle.color = Color.random()
+    circle.dropShadow = nil
+}
+
+// jump the circle to the point on the canvas that was touched.
+Canvas.shared.onTouchUp {
+    circle.center = Canvas.shared.currentTouchPoints.first!
+    circle.dropShadow = Shadow()
+}
+</string>
+			<key>OriginalRange</key>
+			<string>{81, 637}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Shapes.playgroundchapter/Pages/Touch.playgroundpage/Contents.swift</string>
+</dict>
+</plist>
