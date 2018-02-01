@@ -2,7 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Diff</key>
+	<key>BaseFile</key>
+	<string>Chapters/Shapes.playgroundchapter/Pages/Template.playgroundpage/Contents.swift</string>
+	<key>Diffs</key>
 	<array>
 		<dict>
 			<key>ModifiedContent</key>
@@ -160,7 +162,7 @@ class Node: Hashable{
     
     func remove(){
         neighbors = []
-            Node.listAll.remove(self)
+        Node.listAll.remove(self)
     }
     
     // linking
@@ -209,7 +211,7 @@ class Node: Hashable{
         }
         return resultSet
     }
-
+    
 }
 
 struct PlayField {
@@ -373,36 +375,14 @@ redUnit.speed = 2
 blueUnit.activateUnit()
 </string>
 			<key>ModifiedRange</key>
-			<string>{81, 9328}</string>
+			<string>{207, 9328}</string>
 			<key>OriginalContent</key>
-			<string>// create a circle and make it draggable.
-let circle = Circle(radius: 7.0)
-circle.color = Color.purple
-circle.draggable = true
-
-// when the circle is touched, make it darker and give it a shadow.
-circle.onTouchDown {
-    circle.color = circle.color.darker()
-    circle.dropShadow = Shadow()
-}
-
-// when the touch ends on the circle, change its color to a random color.
-circle.onTouchUp {
-    circle.color = Color.random()
-    circle.dropShadow = nil
-}
-
-// jump the circle to the point on the canvas that was touched.
-Canvas.shared.onTouchUp {
-    circle.center = Canvas.shared.currentTouchPoints.first!
-    circle.dropShadow = Shadow()
-}
-</string>
+			<string></string>
 			<key>OriginalRange</key>
-			<string>{81, 637}</string>
+			<string>{207, 0}</string>
 		</dict>
 	</array>
-	<key>File</key>
-	<string>Chapters/Shapes.playgroundchapter/Pages/Touch.playgroundpage/Contents.swift</string>
+	<key>FormatVersion</key>
+	<integer>2</integer>
 </dict>
 </plist>

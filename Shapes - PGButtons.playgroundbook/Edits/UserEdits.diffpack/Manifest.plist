@@ -2,66 +2,34 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>BaseVersion</key>
-	<string>1.0</string>
-	<key>DiffPackType</key>
-	<string>UserEdit</string>
-	<key>DocumentType</key>
-	<string>PlaygroundBook</string>
-	<key>Name</key>
+	<key>BaseContentIdentifier</key>
 	<string>com.apple.playgrounds.Shapes</string>
-	<key>UpdateVersion</key>
+	<key>BaseContentVersion</key>
 	<string>1.0</string>
-	<key>Updates</key>
+	<key>ContentType</key>
+	<string>PlaygroundBookUserEdit</string>
+	<key>Diffs</key>
 	<dict>
-		<key>Added</key>
-		<array>
-			<dict>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Canvas.playgroundpage/UserManifest.plist</string>
-			</dict>
-			<dict>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/UserManifest.plist</string>
-			</dict>
-			<dict>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Create.playgroundpage/UserManifest.plist</string>
-			</dict>
-			<dict>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Touch.playgroundpage/UserManifest.plist</string>
-			</dict>
-			<dict>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Animate.playgroundpage/UserManifest.plist</string>
-			</dict>
-		</array>
-		<key>Modified</key>
-		<array>
-			<dict>
-				<key>Diff</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Canvas.playgroundpage/Contents.swift.delta</string>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Canvas.playgroundpage/Contents.swift</string>
-			</dict>
-			<dict>
-				<key>Diff</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Create.playgroundpage/Contents.swift.delta</string>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Create.playgroundpage/Contents.swift</string>
-			</dict>
-			<dict>
-				<key>Diff</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Touch.playgroundpage/Contents.swift.delta</string>
-				<key>File</key>
-				<string>Chapters/Shapes.playgroundchapter/Pages/Touch.playgroundpage/Contents.swift</string>
-			</dict>
-		</array>
-		<key>Removed</key>
-		<array/>
-		<key>Replaced</key>
-		<array/>
+		<key>Chapters/Shapes.playgroundchapter/Pages/1515EE04-0EF4-4BC0-AB97-82A330B02DBD.playgroundpage/Contents.swift</key>
+		<string>Modified</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/1515EE04-0EF4-4BC0-AB97-82A330B02DBD.playgroundpage/UserManifest.plist</key>
+		<string>Added</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/A5536AC0-3C53-418C-8093-CA9C9F88FF25.playgroundpage/Contents.swift</key>
+		<string>Modified</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/A5536AC0-3C53-418C-8093-CA9C9F88FF25.playgroundpage/UserManifest.plist</key>
+		<string>Added</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/A8FF5F52-A6BB-44F1-81F4-54D46397E7C4.playgroundpage/UserManifest.plist</key>
+		<string>Added</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/FB50A94F-5929-4BC5-85CA-18038AC44652.playgroundpage/Contents.swift</key>
+		<string>Modified</string>
+		<key>Chapters/Shapes.playgroundchapter/Pages/FB50A94F-5929-4BC5-85CA-18038AC44652.playgroundpage/UserManifest.plist</key>
+		<string>Added</string>
+		<key>Chapters/Shapes.playgroundchapter/UserManifest.plist</key>
+		<string>Added</string>
 	</dict>
+	<key>FormatVersion</key>
+	<integer>2</integer>
+	<key>UpdatedContentVersion</key>
+	<string>1.0</string>
 </dict>
 </plist>

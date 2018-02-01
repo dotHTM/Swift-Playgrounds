@@ -2,14 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Diff</key>
+	<key>BaseFile</key>
+	<string>Chapters/Shapes.playgroundchapter/Pages/Template.playgroundpage/Contents.swift</string>
+	<key>Diffs</key>
 	<array>
 		<dict>
 			<key>ModifiedContent</key>
-			<string>// Grid draggable
-// 
-
-import Foundation
+			<string>import Foundation
 
 let Epsilon = 0.1
 let Pi = Double.pi
@@ -33,43 +32,6 @@ func + (lhs: Point, rhs: Point)-&gt;Point{
         y: lhs.y + rhs.y
     )
 }
-
-func - (lhs: Point, rhs: Point)-&gt;Point{
-    return Point(
-        x: lhs.x - rhs.x,
-        y: lhs.y - rhs.y
-    )
-}
-
-func magnitude (_ lhs: Point)-&gt;Double{
-    return sqrt( pow(lhs.x,2) + pow(lhs.y,2) )
-}
-
-func distance (lhs: Point, rhs: Point)-&gt;Double{
-    return magnitude( lhs - rhs) 
-}
-
-
-func nearestPointIn (_ array: [Point], from fromPoint: Point)-&gt;Point{
-    var closestPoint = array.first!
-    var closestDist = -1.0
-    
-    for i in array{
-        if closestDist &lt; 0 {
-            closestPoint = i
-            closestDist = distance(lhs: i, rhs: fromPoint)
-        } else {
-            let thisDist = distance(lhs: i, rhs: fromPoint)
-            if thisDist &lt; closestDist{
-                closestDist = thisDist
-                closestPoint = i
-            }
-        }
-    }
-    return closestPoint
-}
-
-
 
 struct PGBTheme {
     // top layer takes touch events
@@ -323,151 +285,78 @@ class PGButton{
 
 // ---- ---- ---- ---- ---- ---- ----
 
+var buttonA = PGButton(
+    radius: 5,
+    center: Point(x: -10, y: 6),
+    string: "A", 
+    theme: PGBTheme.defaultButton
+)
 
-var theGrid : [Shape] = []
-var circles : [Circle] = []
-var rectangles : [Rectangle] = []
+var buttonB = PGButton(
+    radius: 5,
+    center: Point(x: 10, y: 6),
+    string: "B",
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.976470589637756, green: 0.850980401039124, blue: 0.549019634723663, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.952941179275513, green: 0.686274528503418, blue: 0.133333340287209, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
+)
 
-var gridPoints : [Point] = []
+var buttonPlus = PGButton(
+    radius: 5,
+    center: Point(x: 10, y: -6),
+    string: "+",
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.721568644046783, green: 0.886274516582489, blue: 0.592156887054443, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
+)
 
-var scale = 6.0
-var offset = Point(x: 0, y: 1)
 
-for i in -3...3 {
-    for j in -3...5{
-        let somePoint = offset + Point(x: Double(i)*scale, y: Double(j)*scale )
-        gridPoints.append(somePoint)
-    }
+var buttonMinus = PGButton(
+    radius: 5,
+    center: Point(x: -10, y: -6),
+    string: "-",
+    theme: PGBTheme(
+        textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), 
+        activeColor: #colorLiteral(red: 0.909803926944733, green: 0.47843137383461, blue: 0.643137276172638, alpha: 1.0), 
+        downColor: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0), 
+        inactiveColor: #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
+    )
+)
+
+
+var indicatorB = PGIndicator(
+    initialValue: false, 
+    radius: 4, 
+    center: Point(x: 0, y: 20), 
+    theme: PGBTheme.defaultIndicator
+)
+
+buttonA.onTouchUp { 
+    buttonB.toggleRelease() 
 }
-for i in gridPoints {
-    var someRect = Rectangle(width: scale*0.9, height: scale*0.9)
-    someRect.cornerRadius = 1
-    someRect.color = #colorLiteral(red: 0.803921580314636, green: 0.803921580314636, blue: 0.803921580314636, alpha: 1.0)
-    someRect.center = i
-    theGrid.append(someRect)
-    rectangles.append(someRect)
-}
+buttonB.onTouchDown
+    { indicatorB.value = true }
+buttonB.onTouchUp 
+    { indicatorB.value = false }
 
-class PlayerUnit {
-    var body = Rectangle(width: scale*0.8, height: scale*0.8, cornerRadius: scale*0.2)
-    
-    var dropPlace : Rectangle?
-    var dragDistance = -1.0
-    var previousCenter = Point(x: 0, y: 0)
-    let refreshDistance = 5.0
-
-    
-    var pointMesh = [Point(x: 0, y: 0)]
-    
-    init(){
-    body.draggable = true
-    body.color = #colorLiteral(red: 0.925490200519562, green: 0.235294118523598, blue: 0.10196078568697, alpha: 1.0)
-        
-        body.onTouchUp {
-            let center = self.body.center
-            
-            self.dropPlace?.remove()
-            self.dropPlace = nil
-            self.dragDistance = 0
-            
-            animate(duration: 1, delay: 0){
-                self.body.center = nearestPointIn(gridPoints, from: center)
-            }
-        }
-        
-        body.onTouchDrag {
-            let center = self.body.center
-            
-            if self.dropPlace == nil {
-                self.dropPlace = Rectangle(width: scale*0.7, height: scale*0.7, cornerRadius: scale*0.1)
-                self.dropPlace?.color = #colorLiteral(red: 0.341176480054855, green: 0.623529434204102, blue: 0.168627455830574, alpha: 1.0)
-                self.dropPlace?.center = nearestPointIn(gridPoints, from: center)
-            }
-            
-            self.dragDistance
-            
-            if self.dragDistance &lt; 0 {
-                self.previousCenter = center
-                self.dragDistance = 0.0
-            } else {
-                self.dragDistance = distance(lhs: center, rhs: self.previousCenter)
-            }
-            
-            if self.dragDistance &gt; self.refreshDistance {            animate(duration: 0.5, delay: 0){
-                    self.dropPlace?.center = nearestPointIn(gridPoints, from: center)
-                }
-            }
-        }
-    }
-    
-    convenience init(color newColor: Color, at somePoint: Point, gameField: [Point] ){
-        self.init()
-        body.color = newColor
-        body.center = somePoint
-        pointMesh = gameField
-    }
-}
-
-var blueUnit = PlayerUnit(color: #colorLiteral(red: 0.219607844948769, green: 0.00784313771873713, blue: 0.854901969432831, alpha: 1.0), at: gridPoints.first! , gameField: gridPoints )
-
-var redUnit = PlayerUnit(color: #colorLiteral(red: 0.807843148708344, green: 0.0274509806185961, blue: 0.333333343267441, alpha: 1.0), at: gridPoints.last! , gameField: gridPoints )
-
+buttonPlus.onTouchDown { indicatorB.maxRays += 1 }
+buttonMinus.onTouchDown { indicatorB.maxRays -= 1 }
 </string>
 			<key>ModifiedRange</key>
-			<string>{283, 10781}</string>
+			<string>{207, 9127}</string>
 			<key>OriginalContent</key>
-			<string>// 1. Create a circle
-let circle = Circle(radius: 3)
-circle.center.y += 28
-
-// 2. Create a rectangle
-let rectangle = Rectangle(width: 10, height: 5, cornerRadius: 0.75)
-rectangle.color = .purple
-rectangle.center.y += 18
-
-// 3. Create a line
-let line = Line(start: Point(x: -10, y: 9), end: Point(x: 10, y: 9), thickness: 0.5)
-line.center.y -= 2
-line.rotation = 170 * (Double.pi / 180)
-line.color = .yellow
-
-// 4. Create text
-let text = Text(string: "Hello world!", fontSize: 32.0, fontName: "Futura", color: .red)
-text.center.y -= 2
-
-// 5. Create an image
-let image = Image(name: "SwiftBird", tint: .green)
-image.size.width *= 0.5
-image.size.height *= 0.5
-image.center.y -= 11
-
-// 6. Create a pattern with rectangles
-let numRectangles = 4
-var xOffset = Double((numRectangles/2) * (-1))
-var yOffset = -26.0
-let saturationEnd = 0.911
-let saturationStart = 0.1
-let saturationStride = (saturationEnd - saturationStart)/Double(numRectangles)
-
-for i in 0...numRectangles {
-    
-    let rectangle = Rectangle(width: 10, height: 5, cornerRadius: 0.75)
-    
-    // set the color.
-    let saturation = saturationEnd - (Double(numRectangles - i) * saturationStride)
-    rectangle.color = Color(hue: 0.079, saturation: saturation, brightness: 0.934)
-    
-    // calculate the offset.
-    rectangle.center = Point(x: xOffset, y: yOffset)
-    xOffset += 1
-    yOffset += 1
-}
-</string>
+			<string></string>
 			<key>OriginalRange</key>
-			<string>{283, 1361}</string>
+			<string>{207, 0}</string>
 		</dict>
 	</array>
-	<key>File</key>
-	<string>Chapters/Shapes.playgroundchapter/Pages/Create.playgroundpage/Contents.swift</string>
+	<key>FormatVersion</key>
+	<integer>2</integer>
 </dict>
 </plist>
